@@ -3,12 +3,10 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useRef, useState, useEffect } from 'react';
 import { TouchableOpacity, View, Text, Button, Dimensions } from 'react-native';
 import { FontAwesome5, MaterialCommunityIcons, AntDesign } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get('window');
 
-export default function Scan() {
-  const navigation = useNavigation();
+export default function CardCamera({ onImageCapture, onClose }: { onImageCapture: (imageUri: string) => void, onClose: () => void }) {
   const cameraRef = useRef<any>(null);
   const [cameraType, setCameraType] = useState<'front' | 'back'>('back');
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -19,7 +17,7 @@ export default function Scan() {
     if (cameraRef.current && isCameraReady) {
       let photo = await cameraRef.current.takePictureAsync();
       setImageUri(photo.uri);
-      navigation.navigate('Info', { imageUri: photo.uri });
+      onImageCapture(photo.uri);
     }
   };
 
@@ -42,11 +40,9 @@ export default function Scan() {
     if (!result.canceled) {
       const selectedImage = result.assets[0].uri;
       setImageUri(selectedImage);
-      navigation.navigate('Info', { imageUri: selectedImage });
+      onImageCapture(selectedImage);
     }
   };
-  
-  
 
   useEffect(() => {
     if (permission && !permission.granted) {
@@ -80,7 +76,7 @@ export default function Scan() {
             {/* Top left back arrow */}
             <View className="absolute top-0 left-0 right-0 z-10">
               <View className="absolute top-0 left-0 right-0 bg-black opacity-50 h-[300px]"></View>
-              <TouchableOpacity className="pt-[50px] ml-[16px] pb-[20px] z-20" onPress={() => navigation.goBack()}>
+              <TouchableOpacity className="pt-[25px] ml-[16px] pb-[20px] z-20" onPress={onClose}>
                 <AntDesign name="arrowleft" size={35} color="white" />
               </TouchableOpacity>
             </View>

@@ -8,7 +8,7 @@ import blob2 from "../../assets/blob2.png";
 import blob3 from "../../assets/blob3.png";
 import { AntDesign } from '@expo/vector-icons';
 
-export default function Login(){
+export default function Register(){
     const navigation = useNavigation();
     return(
         <SafeAreaView className="flex-1 bg-[#023535]">
@@ -17,12 +17,12 @@ export default function Login(){
             <Image source={blob3} className="absolute bottom-[-80px] right-[-100px] transform -translate-y-1/2 w-[500px] h-[400px]" resizeMode="contain"/>
 
             <View className="flex justify-start">
-                <TouchableOpacity className="pt-[40px] ml-[16px]" onPress={()=> navigation.goBack()}>
+                <TouchableOpacity className="pt-[50px] ml-[16px]" onPress={()=> navigation.goBack()}>
                     <AntDesign name="arrowleft" size={35} color="white" />
                 </TouchableOpacity>
             </View>
 
-            <View className="flex-1 items-center gap-y-[40px] mt-[5px]"> 
+            <View className="flex-1 items-center gap-y-[40px] pt-[30px]"> 
                 <Image source={white} className="w-[260px] h-[260px]"></Image>
                 <View className="form space-y-2 items-center">
                     <Text className="ml-1 text-white">USERNAME</Text>

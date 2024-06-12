@@ -3,7 +3,7 @@ import { View, Text, Dimensions, Linking, Image, TouchableOpacity, Share, Activi
 import * as Location from "expo-location";
 import axios from "axios";
 import MapView, { Marker, Callout } from "react-native-maps";
-import { FontAwesome5, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyDeBosY3h1V3eFw0ZhjxL0a6q6liZ2Zt14';
 
@@ -37,20 +37,29 @@ export default function Workshop() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingWorkshops, setIsFetchingWorkshops] = useState(false);
   const [showRecenterButton, setShowRecenterButton] = useState(false);
-  const [showCompassButton, setShowCompassButton] = useState(false);
+  const [showError, setShowError] = useState(false);
   const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission to access location was denied');
-        return;
-      }
+      setIsLoading(true);
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.log('Permission to access location was denied');
+          setIsLoading(false);
+          setShowError(true);
+          return;
+        }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location as LocationType);
-      setIsLoading(false);
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation(location as LocationType);
+        setIsLoading(false);
+      } catch (error) {
+        console.log('Error getting location:', error);
+        setIsLoading(false);
+        setShowError(true);
+      }
     })();
   }, []);
 
@@ -110,24 +119,14 @@ export default function Workshop() {
     }
   };
 
-  const handleSave = (workshop: WorkshopType) => {
-    const savedWorkshop = {
-      name: workshop.name,
-      address: workshop.vicinity,
-      direction: `https://www.google.com/maps/dir/?api=1&destination=${workshop.geometry.location.lat},${workshop.geometry.location.lng}`
-    };
-    console.log('Workshop saved:', savedWorkshop);
-    // Implement the logic to save the workshop details to the backend
-  };
-
-  const handleMapRegionChange = (region) => {
+  const handleMapRegionChange = (region: { latitude: number; longitude: number; }) => {
     if (location) {
       const distance = Math.sqrt(
         Math.pow(region.latitude - location.coords.latitude, 2) +
         Math.pow(region.longitude - location.coords.longitude, 2)
       );
 
-      if (distance > 0.001) {
+      if (distance > 0.005) {
         setShowRecenterButton(true);
       } else {
         setShowRecenterButton(false);
@@ -137,8 +136,10 @@ export default function Workshop() {
 
   const handleRecenter = () => {
     if (location && mapRef.current) {
+      const newLatitude = location.coords.latitude - 0.005;
+  
       mapRef.current.animateToRegion({
-        latitude: location.coords.latitude,
+        latitude: newLatitude,
         longitude: location.coords.longitude,
         latitudeDelta: 0.015,
         longitudeDelta: 0.0121,
@@ -147,7 +148,7 @@ export default function Workshop() {
     setShowRecenterButton(false);
   };
 
-  const handleMapPress = (e) => {
+  const handleMapPress = (e: { nativeEvent: { coordinate: { latitude: any; longitude: any; }; }; }) => {
     const { latitude, longitude } = e.nativeEvent.coordinate;
     mapRef.current.animateToRegion({
       latitude,
@@ -157,20 +158,89 @@ export default function Workshop() {
     });
   };
 
+  const handleMarkerPress = (workshop: React.SetStateAction<WorkshopType | null>) => {
+    const { lat, lng } = workshop.geometry.location;
+    const newLatitude = lat - 0.005;
+  
+    mapRef.current.animateToRegion({
+      latitude: newLatitude,
+      longitude: lng,
+      latitudeDelta: 0.015,
+      longitudeDelta: 0.0121,
+    });
+  
+    setSelectedWorkshop(workshop);
+  };
+
+  const handleReload = () => {
+    setShowError(false);
+    setIsLoading(true);
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.log('Permission to access location was denied');
+          setIsLoading(false);
+          setShowError(true);
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation(location as LocationType);
+        setIsLoading(false);
+      } catch (error) {
+        console.log('Error getting location:', error);
+        setIsLoading(false);
+        setShowError(true);
+      }
+    })();
+  };
+
   return (
-    <View className="flex-1">
+    <View className="flex-1 justify-center items-center">
       {isLoading ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#023535" />
           <Text>Loading map...</Text>
+        </View>
+      ) : showError ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-center mb-4">There is something wrong with your connection, do you want to reload?</Text>
+          <TouchableOpacity
+            className="p-3 bg-[#023535] rounded-full"
+            onPress={handleReload}
+          >
+            <FontAwesome5 name="redo" size={20} color="white" />
+          </TouchableOpacity>
         </View>
       ) : (
         <>
-          <View className="flex top-0 pt-[50px] pb-[20px] bg-white items-center">
-            <TouchableOpacity className="bg-green-500 p-2 rounded-lg items-center" onPress={fetchWorkshops}>
-              <Text className="text-white text-center">Find Workshops</Text>
-            </TouchableOpacity>
+          <View className="flex-row top-0 pt-[150px] pb-[20px] bg-white items-center justify-between w-full">
+            <View className="flex-1 items-start pl-4">
+              <TouchableOpacity
+                className={`${findWorkshopsPressed ? 'bg-[#023535]' : 'bg-gray-400'} w-[50px] h-[50px] items-center justify-center rounded-lg shadow-lg duration-500`}
+                onPress={clearWorkshops}
+                disabled={!findWorkshopsPressed}
+              >
+                <MaterialCommunityIcons name="broom" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
+            <View className="flex-1 items-center">
+              <TouchableOpacity className="bg-[#023535] w-[135px] h-[50px] justify-center rounded-lg items-center" onPress={fetchWorkshops}>
+                <Text className="text-white text-center font-semibold">Find Workshops</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="flex-1 items-end pr-4">
+              <TouchableOpacity
+                className={`${showRecenterButton ? 'bg-[#023535]' : 'bg-gray-400'} w-[50px] h-[50px] items-center justify-center rounded-lg shadow-lg duration-2000`}
+                onPress={handleRecenter}
+                disabled={!showRecenterButton}
+              >
+                <FontAwesome5 name="location-arrow" size={18} color="white" />
+              </TouchableOpacity>
+            </View>
           </View>
+  
           {location && (
             <MapView
               ref={mapRef}
@@ -194,7 +264,7 @@ export default function Workshop() {
                     latitude: workshop.geometry.location.lat,
                     longitude: workshop.geometry.location.lng,
                   }}
-                  onPress={() => setSelectedWorkshop(workshop)}
+                  onPress={() => handleMarkerPress(workshop)}
                 >
                   <Callout>
                     <Text>{workshop.name}</Text>
@@ -202,57 +272,36 @@ export default function Workshop() {
                 </Marker>
               ))}
             </MapView>
-          
           )}
-          <View className="absolute top-24 left-0 right-0 flex-row justify-between p-4">
-            <View className="flex-1 items-start">
-              {findWorkshopsPressed ? (
-                <TouchableOpacity
-                  className="bg-white p-3 rounded-lg shadow-lg"
-                  onPress={clearWorkshops}
-                >
-                  <MaterialCommunityIcons name="broom" size={24} color="black" />
-                </TouchableOpacity>
-              ) : (
-                <View className="p-3 rounded-lg opacity-0">
-                  <MaterialCommunityIcons name="broom" size={24} color="transparent" />
-                </View>
-              )}
-            </View>
-            <View className="flex-1 items-end">
-              <TouchableOpacity
-                className="bg-white p-3 rounded-lg shadow-lg"
-                onPress={handleRecenter}
-              >
-                <FontAwesome5 name="location-arrow" size={24} color="black" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-
+  
           {selectedWorkshop && (
-            <View className="absolute bottom-28 left-2.5 right-2.5 bg-white bg-opacity-90 rounded-xl p-4">
-              <View className="items-center">
-                <Text className="font-bold mb-1">{selectedWorkshop.name}</Text>
-                <Text className="mb-1">{selectedWorkshop.vicinity}</Text>
+            <View className="absolute bottom-[120px] w-[360px] bg-[#023535] bg-opacity-90 rounded-xl p-4">
+              <View className="flex-row items-center">
                 {selectedWorkshop.photo ? (
-                  <Image source={{ uri: selectedWorkshop.photo }} style={{ width: 200, height: 100, marginBottom: 10 }} />
+                  <Image source={{ uri: selectedWorkshop.photo }} style={{ width: 120, height: 75, marginRight: 10, borderRadius: 10 }} />
                 ) : (
-                  <View style={{ width: 200, height: 100, marginBottom: 10, backgroundColor: '#e0e0e0' }} />
+                  <View style={{ width: 150, height: 80, marginRight: 10, backgroundColor: '#e0e0e0', borderRadius: 10 }} />
                 )}
-                {selectedWorkshop.rating ? (
-                  <Text className="mb-1">Rating: {selectedWorkshop.rating} ★</Text>
-                ) : (
-                  <View style={{ width: 100, height: 20, marginBottom: 10, backgroundColor: '#e0e0e0' }} />
-                )}
-                <TouchableOpacity className="bg-blue-500 p-2 mt-1 rounded-lg items-center w-full" onPress={() => handleDirections(selectedWorkshop)}>
-                  <Text className="text-white text-center">Directions</Text>
+                <View className="flex-1">
+                  <Text className="font-bold mb-1 text-white" numberOfLines={1} ellipsizeMode="tail">
+                    {selectedWorkshop.name}
+                  </Text>
+                  <Text className="mb-1 text-white" numberOfLines={2} ellipsizeMode="tail">
+                    {selectedWorkshop.vicinity}
+                  </Text>
+                  {selectedWorkshop.rating ? (
+                    <Text className="mb-1 text-white">Rating: {selectedWorkshop.rating} ★</Text>
+                  ) : (
+                    <View style={{ width: 75, height: 20, marginBottom: 10, backgroundColor: '#e0e0e0', borderRadius: 10 }} />
+                  )}
+                </View>
+              </View>
+              <View className="items-center mt-2">
+                <TouchableOpacity className="bg-white p-2 mt-1 rounded-lg items-center w-full" onPress={() => handleDirections(selectedWorkshop)}>
+                  <Text className="text-center text-[#023535] font-medium">Directions</Text>
                 </TouchableOpacity>
-                <TouchableOpacity className="bg-blue-500 p-2 mt-1 rounded-lg items-center w-full" onPress={() => handleShare(selectedWorkshop)}>
-                  <Text className="text-white text-center">Share</Text>
-                </TouchableOpacity>
-                <TouchableOpacity className="bg-blue-500 p-2 mt-1 rounded-lg items-center w-full" onPress={() => handleSave(selectedWorkshop)}>
-                  <Text className="text-white text-center">Save</Text>
+                <TouchableOpacity className="bg-white p-2 mt-1 rounded-lg items-center w-full" onPress={() => handleShare(selectedWorkshop)}>
+                  <Text className="text-[#023535] text-center font-medium">Share</Text>
                 </TouchableOpacity>
                 <TouchableOpacity className="bg-red-500 p-2 mt-1 rounded-lg items-center w-full" onPress={() => setSelectedWorkshop(null)}>
                   <Text className="text-white text-center">Close</Text>
@@ -260,13 +309,14 @@ export default function Workshop() {
               </View>
             </View>
           )}
+  
+          {isFetchingWorkshops && (
+            <View className="absolute justify-center items-center bg-white w-[200px] h-[100px] rounded-2xl">
+              <ActivityIndicator size="large" color="#023535" />
+              <Text className="text-black">Searching for workshops...</Text>
+            </View>
+          )}
         </>
-      )}
-      {isFetchingWorkshops && (
-        <View className="absolute top-0 left-0 right-0 bottom-0 justify-center items-center">
-          <ActivityIndicator size="large" color="#0000ff" />
-          <Text className="text-black">Searching for workshops...</Text>
-        </View>
       )}
     </View>
   );

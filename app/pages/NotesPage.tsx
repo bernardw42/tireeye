@@ -6,13 +6,18 @@ import {
   TouchableOpacity,
   Text,
   Keyboard,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Alert,
+  Image,
+  ScrollView,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AntDesign } from '@expo/vector-icons';
-
+import blob1 from "../../assets/blob1.png";
+import blob2 from "../../assets/blob2.png";
+import blob3 from "../../assets/blob3.png";
 
 type RootStackParamList = {
   NotesPage: { note: { title: string; note: string } };
@@ -52,55 +57,59 @@ export default function NotesPage({ route, navigation }: NotesPageProps) {
     });
   }, [navigation, note]);
 
+  const handleSaveNote = () => {
+    // Logic to save the note
+    console.log("Save note", note);
+    navigation.goBack();
+  };
+
+  const handleDeleteNote = () => {
+    Alert.alert("Delete Note", "Are you sure you want to delete this note?", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes",
+        onPress: () => {
+          setNote({
+            title: "",
+            note: "",
+          });
+        }
+      }
+    ]);
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView className="flex-1 justify-start items-start bg-gray-100 m-5">
-        <View className="flex justify-start">
-                <TouchableOpacity className="pt-[40px] ml-[16px]" onPress={()=> navigation.goBack()}>
-                    <AntDesign name="arrowleft" size={35} color="black" />
-                </TouchableOpacity>
+      <SafeAreaView className="flex-1 bg-[#023535] px-4 pb-4 pt-[50px]">
+        <Image source={blob1} className="absolute top-[-50px] right-[-110px] transform -translate-y-1/2 w-[300px] h-[400px]" resizeMode="contain" />
+        <Image source={blob2} className="absolute top-[25%] left-[-130px] w-[300px] h-[400px]" resizeMode="contain" />
+        <Image source={blob3} className="absolute bottom-[-80px] right-[-100px] transform -translate-y-1/2 w-[500px] h-[400px]" resizeMode="contain" />
+        <View className="flex-row justify-between items-center w-full bg-white rounded-full mb-6">
+              <TouchableOpacity className="px-4 py-2" onPress={() => navigation.goBack()}>
+                  <AntDesign name="arrowleft" size={26} color="#023535" />
+              </TouchableOpacity>
+              <Text className="font-bold text-2xl text-[#023535] justify-center pr-6">Note</Text>
+              <View className="px-4 py-2" />
         </View>
-        <Text className="text-2xl font-bold mb-4">Note</Text>
-        <TextInput
-          className="w-full p-4 border border-gray-400 rounded-lg mb-5 text-lg text-gray-600"
-          autoFocus={true}
-          maxLength={40}
-          value={note.title}
-          placeholder="Title"
-          onChangeText={(text) => setNote({ ...note, title: text })}
-        />
-        <TextInput
-          className="w-full p-4 border border-gray-400 rounded-lg text-lg h-40"
-          multiline={true}
-          value={note.note}
-          placeholder="Description"
-          onChangeText={(text) => setNote({ ...note, note: text })}
-        />
-        <View className="w-full flex-row justify-center mt-2 absolute bottom-0">
-          <TouchableOpacity
-            className="rounded-lg w-20 h-20 items-center justify-center m-2 bg-blue-700"
-            onPress={() => console.log("Save note")}
-          >
-            <Feather name="save" size={29} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="rounded-lg w-20 h-20 items-center justify-center m-2 bg-red-700"
-            onPress={() => console.log("Delete note")}
-          >
-            <Feather name="trash-2" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
+        <ScrollView className="px-2">
+          <TextInput
+            className="w-full bg-white p-4 border border-gray-400 rounded-lg mb-5 h-[400px] text-left"
+            multiline={true}
+            textAlignVertical="top"
+            value={note.note}
+            placeholder="Your Note Starts Here!"
+            onChangeText={(text) => setNote({ ...note, note: text })}
+          />
+          <View className="flex-row justify-between mt-4">
+            <TouchableOpacity onPress={handleDeleteNote} className="py-2 w-[48%] justify-center items-center rounded-lg bg-red-500">
+              <Feather name="trash-2" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSaveNote} className="py-2 w-[48%] justify-center items-center rounded-lg bg-blue-500">
+              <Feather name="save" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 }
-
-
-
-
-
-
-
-
-
-

@@ -38,7 +38,7 @@ export default function Home({ navigation }: Props) {
           onPress={() => navigation.navigate("Notes")}
         >
           <MaterialCommunityIcons name="note-edit" size={60} color="#023535" />
-          <Text className="text-[#023535] font-semibold mt-[5px] text-[12px]">NOTES</Text>
+          <Text className="text-[#023535] font-semibold mt-[5px] text-[12px]">ARCHIVE</Text>
         </TouchableOpacity>
       </View>
 
