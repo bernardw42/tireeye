@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "tireeye3",
-    "slug": "tireeye3",
+    "name": "Tire Eye",
+    "slug": "tire-eye",
+    "description": "An app for your Tire Information",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,17 +19,26 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show nearby workshops."
-      }
+      },
+      "bundleIdentifier": "com.bernardw42.tireeye"
     },
     "android": {
-      "permissions": ["ACCESS_FINE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.bernardw42.tireeye"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "52f69ef6-3e83-46ce-94b8-2652e4116e02"
+      }
     }
   }
 }

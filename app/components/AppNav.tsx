@@ -17,6 +17,7 @@ import Info from "../pages/Info";
 import History from "../pages/History";
 import NotesPage from "../pages/NotesPage";
 import CarNotes from "../pages/CarNotes";
+import Forgot from "../pages/Forgot";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -194,6 +195,11 @@ export default function AppNav() {
                 <Stack.Screen 
                     name="Register" 
                     component={Register} 
+                    options={{ headerShown: false }} 
+                />
+                <Stack.Screen 
+                    name="Forgot" 
+                    component={Forgot} 
                     options={{ headerShown: false }} 
                 />
                 <Stack.Screen 

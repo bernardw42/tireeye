@@ -66,9 +66,9 @@ export default function Login() {
                 keyboardVerticalOffset={90}
             >
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-                    <View className="flex-1 items-center gap-y-[40px] pt-[30px]">
-                        <Image source={white} className="w-[260px] h-[260px]" />
-                        <View className="form space-y-2 items-center">
+                    <View className="flex-1 items-center">
+                        <Image source={white} className="w-[220px] h-[220px]" />
+                        <View className="form space-y-2 items-center pt-[25px] pb-[50px]">
                             <Text className="ml-1 text-white">USERNAME</Text>
                             <TextInput
                                 className="py-2 px-4 bg-gray-100 text-gray-700 rounded-2xl w-[300px] mb-[2px]"
@@ -88,6 +88,17 @@ export default function Login() {
                         <TouchableOpacity className="py-3 bg-white w-[300px] rounded-2xl" onPress={handleLogin}>
                             <Text className="font-bold text-center text-[#023535]">LOG IN</Text>
                         </TouchableOpacity>
+                        <View className="flex-row justify-center pt-3">
+                            <Text className="text-white">Don't have an account?</Text>
+                            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+                                <Text className="text-white font-semibold"> Register</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View className="flex-row justify-center pt-2">
+                            <TouchableOpacity onPress={() => navigation.navigate("Forgot")}>
+                                <Text className="text-white font-extralight">Forgot Password?</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>

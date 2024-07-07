@@ -9,20 +9,47 @@ import blob2 from "../../assets/blob2.png";
 import blob3 from "../../assets/blob3.png";
 import { AntDesign } from '@expo/vector-icons';
 
-export default function Register() {
+export default function Forgot() {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [otp, setOtp] = useState('');
+    const [generatedOtp, setGeneratedOtp] = useState('');
 
     const validateEmail = (email: string) => {
         const re = /\S+@\S+\.\S+/;
         return re.test(email);
     };
 
-    const handleRegister = async () => {
+    const sendOtp = async () => {
         if (!validateEmail(email)) {
             Alert.alert("Invalid Email", "Please enter a valid email address.");
+            return;
+        }
+
+        try {
+            const existingUsers = await AsyncStorage.getItem('users');
+            const users = existingUsers ? JSON.parse(existingUsers) : [];
+            const userExists = users.find((user: any) => user.email === email);
+
+            if (!userExists) {
+                Alert.alert("User Not Found", "This email is not registered.");
+                return;
+            }
+
+            // Generate OTP and save it in the state (In a real app, you would send this via email)
+            const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            setGeneratedOtp(newOtp);
+            Alert.alert("OTP Sent", `Your OTP code is ${newOtp}`);
+        } catch (error) {
+            console.error("Failed to send OTP:", error);
+        }
+    };
+
+    const handleChangePassword = async () => {
+        if (otp !== generatedOtp) {
+            Alert.alert("Invalid OTP", "The OTP code entered is incorrect.");
             return;
         }
 
@@ -34,20 +61,19 @@ export default function Register() {
         try {
             const existingUsers = await AsyncStorage.getItem('users');
             const users = existingUsers ? JSON.parse(existingUsers) : [];
-            const userExists = users.find((user: any) => user.email === email);
+            const userIndex = users.findIndex((user: any) => user.email === email);
 
-            if (userExists) {
-                Alert.alert("User Exists", "This email is already registered.");
+            if (userIndex === -1) {
+                Alert.alert("User Not Found", "This email is not registered.");
                 return;
             }
 
-            const newUser = { email, password };
-            users.push(newUser);
+            users[userIndex].password = password;
             await AsyncStorage.setItem('users', JSON.stringify(users));
-            Alert.alert("Success", "You have registered successfully.");
+            Alert.alert("Success", "Your password has been changed successfully.");
             navigation.navigate("Login");
         } catch (error) {
-            console.error("Failed to register:", error);
+            console.error("Failed to change password:", error);
         }
     };
 
@@ -70,8 +96,9 @@ export default function Register() {
             >
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
                     <View className="flex-1 items-center">
-                        <Image source={white} className="w-[220px] h-[220px]" />
-                        <View className="form space-y-2 items-center pt-[25px] pb-[50px]">
+                        <Text className="text-3xl font-bold text-white pt-[30px]">FORGOT</Text>
+                        <Text className="text-3xl font-bold text-white">PASSWORD</Text>
+                        <View className="form space-y-2 items-center pt-[40px] pb-[60px]">
                             <Text className="ml-1 text-white">USERNAME</Text>
                             <TextInput
                                 className="py-2 px-4 bg-gray-100 text-gray-700 rounded-2xl w-[300px] mb-[2px]"
@@ -95,16 +122,23 @@ export default function Register() {
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
                             />
+                            <Text className="ml-1 text-white">OTP CODE</Text>
+                            <View className="flex-row items-center w-[300px]">
+                                <TextInput
+                                    className="py-2 px-4 bg-gray-100 text-gray-700 rounded-l-2xl w-[65%]"
+                                    placeholder="Enter OTP Code"
+                                    value={otp}
+                                    onChangeText={setOtp}
+                                    secureTextEntry
+                                />
+                                <TouchableOpacity className="py-3 bg-white w-[35%] rounded-r-2xl items-center" onPress={sendOtp}>
+                                    <Text className="font-bold text-[#023535]">Send OTP</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                        <TouchableOpacity className="py-3 bg-white w-[300px] rounded-2xl" onPress={handleRegister}>
-                            <Text className="font-bold text-center text-[#023535]">REGISTER</Text>
+                        <TouchableOpacity className="py-3 bg-white w-[300px] rounded-2xl" onPress={handleChangePassword}>
+                            <Text className="font-bold text-center text-[#023535]">CHANGE PASSWORD</Text>
                         </TouchableOpacity>
-                        <View className="flex-row justify-center p-3">
-                            <Text className="text-white">Already have an account?</Text>
-                            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                                <Text className="text-white font-semibold"> Log In</Text>
-                            </TouchableOpacity>
-                        </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
