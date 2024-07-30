@@ -18,7 +18,6 @@ const Info = () => {
   const route = useRoute();
   const { imageUri } = route.params as { imageUri: string };
 
-  // Mock data for analysis result
   const tireInfo: TireInfo = {
     brand: "MockBrand",
     size: "225/50R17",
@@ -28,7 +27,6 @@ const Info = () => {
   };
 
   useEffect(() => {
-    // Add to history on component mount
     const addToHistory = async () => {
       try {
         const existingHistory = await AsyncStorage.getItem('scannedTires');
@@ -59,7 +57,6 @@ const Info = () => {
     Clipboard.setStringAsync(textToCopy);
     Alert.alert("Copied to Clipboard", textToCopy);
   };
-  
 
   const addToNotes = async () => {
     Alert.alert(
@@ -98,10 +95,9 @@ const Info = () => {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View testID="info-container" className="flex-1 bg-white">
       <Image source={{ uri: tireInfo.image }} className="w-full h-[35%] rounded-b-3xl" />
       <View className="flex-1 px-6">
-        {/* Buttons */}
         <View className="flex-row justify-between mt-4 mb-2">
           <TouchableOpacity
             className="bg-[#023535] p-2 rounded-2xl"
@@ -117,7 +113,6 @@ const Info = () => {
           </TouchableOpacity>
         </View>
         
-        {/* Info Bars */}
         <View className="space-y-1">
           <View>
             <Text className="text-[#023535] font-bold text-center text-lg mb-1">Brand</Text>
@@ -145,7 +140,6 @@ const Info = () => {
           </View>
         </View>
 
-        {/* Action Buttons */}
         <View className="flex-row justify-between mt-4">
           <TouchableOpacity
             className="bg-[#023535] p-3 rounded-2xl"

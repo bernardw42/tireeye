@@ -21,12 +21,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
-      {/* <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false}}>
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="Notes" component={Notes} />
-          <Stack.Screen name="Market" component={Market} />
-          <Stack.Screen name="Workshop" component={Workshop} />
-        </Stack.Navigator>
-      </NavigationContainer> */}

@@ -1,6 +1,7 @@
 import { View, Text, SafeAreaView, TouchableOpacity, Image } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import tiree from "../../assets/tireee.png";
 import blob1 from "../../assets/blob1.png";
@@ -9,6 +10,12 @@ import blob3 from "../../assets/blob3.png";
 
 export default function Welkam() {
     const navigation = useNavigation();
+
+    const handlePress = async (screen) => {
+        await AsyncStorage.setItem('@firstlaunch', 'true');
+        navigation.navigate(screen);
+    };
+
     return (
         <SafeAreaView className="flex-1 bg-[#023535]">
             <Image source={blob1} className="absolute top-[-50px] right-[-110px] transform -translate-y-1/2 w-[300px] h-[400px]" resizeMode="contain"/>
@@ -20,12 +27,12 @@ export default function Welkam() {
                 <Image source={tiree} className="w-[300px] h-[300px]" />
 
                 <View className="space-y-4">
-                    <TouchableOpacity className="py-3 bg-white w-[300px] rounded-2xl" onPress={() => navigation.navigate("Register")}>
+                    <TouchableOpacity className="py-3 bg-white w-[300px] rounded-2xl" onPress={() => handlePress("Register")}>
                         <Text className="text-xl font-bold text-center text-[#023535]">Sign Up</Text>
                     </TouchableOpacity>
                     <View className="flex-row justify-center">
                         <Text className="text-white">Already have an account?</Text>
-                        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                        <TouchableOpacity onPress={() => handlePress("Login")}>
                             <Text className="text-white font-semibold"> Log In</Text>
                         </TouchableOpacity>
                     </View>
